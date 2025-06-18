@@ -7,13 +7,11 @@ import numpy as np
 df = pd.read_csv('medical_examination.csv')
 
 # 2
-df['bmi'] = (df.weight / np.square(df.height)) * 10000
-df['overweight'] = np.where(df.bmi > 25, 1, 0)
+df['overweight'] = np.where(((df.weight / np.square(df.height)) * 10000) > 25, 1, 0)
 
 # 3
 df['cholesterol'] = np.where(df.cholesterol > 1, 1, 0)
 df['gluc'] = np.where(df.gluc > 1, 1, 0)
-print(df.head())
 
 # 4
 def draw_cat_plot():
@@ -37,23 +35,24 @@ def draw_cat_plot():
 
 # 10
 def draw_heat_map():
-    # 11
-    df_heat = None
+    # 11 - clean data
+    df_heat = df[(df['ap_lo'] <= df['ap_hi']) & 
+                 (df['height'] >= df['height'].quantile(0.025)) & 
+                 (df['height'] <= df['height'].quantile(0.975)) & 
+                 (df['weight'] >= df['weight'].quantile(0.025)) & 
+                 (df['weight'] <= df['weight'].quantile(0.975))]
 
-    # 12
-    corr = None
+    # 12 - Calculate the correlation matrix and store it in the corr variable.
+    corr = df_heat.corr()
 
-    # 13
-    mask = None
+    # 13 - Generate a mask for the upper triangle and store it in the mask variable.
+    mask = np.triu(np.ones_like(corr, dtype=bool))
 
+    # 14 - Prepare figure for ploting
+    fig, ax = plt.subplots(figsize=(10, 8))
 
-
-    # 14
-    fig, ax = None
-
-    # 15
-
-
+    # 15 - Create hitmap
+    sns.heatmap(corr, mask=mask, square=True, linewidths=0.5, annot=True, fmt="0.1f")
 
     # 16
     fig.savefig('heatmap.png')
